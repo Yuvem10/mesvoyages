@@ -14,69 +14,75 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Visite[]    findAll()
  * @method Visite[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class VisiteRepository extends ServiceEntityRepository
-{
-    public function __construct(ManagerRegistry $registry)
-    {
+class VisiteRepository extends ServiceEntityRepository {
+
+    public function __construct(ManagerRegistry $registry) {
         parent::__construct($registry, Visite::class);
     }
 
-//    /**
-//     * @return Visite[] Returns an array of Visite objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('v.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function add(Visite $entity, bool $flush = false): void {
+        $this->getEntityManager()->persist($entity);
 
-//    public function findOneBySomeField($value): ?Visite
-//    {
-//        return $this->createQueryBuilder('v')
-//            ->andWhere('v.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
-    
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(Visite $entity, bool $flush = false): void {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
     /**
      * Retourne toutes les visites triées sur un champ
      * @param type $champ
-     * @param type $ordre   
-     * @return Visite[]    
+     * @param type $ordre
+     * @return Visite[]
      */
-    public function findAllOrderBy($champ, $ordre) : array{
+    public function findAllOrderBy($champ, $ordre): array {
         return $this->createQueryBuilder('v')
-                ->orderBy('v.'.$champ, $ordre)
-                ->getQuery()
-                ->getResult();
+                        ->orderBy('v.' . $champ, $ordre)
+                        ->getQuery()
+                        ->getResult();
     }
+
     /**
-     * Enregistement dont un champ est égal a une valeur 
+     * Enregistrements dont un champ est égal à une valeur
+     * ou tous les enregistrements si la valeuur est vide
      * @param type $champ
      * @param type $valeur
      * @return Visite[]
      */
-    public function findByEqualValue($champ, $valeur) : array{
-        if ($valeur == ""){
+    public function findByEqualValue($champ, $valeur): array {
+        if ($valeur == "") {
             return $this->createQueryBuilder('v')
-                    ->orderBy('v.'.$champ, 'ASC')
-                    ->getQuery()
-                    ->getResult();
-        }else{
+                            ->orderBy('v.' . $champ, 'ASC')
+                            ->getQuery()
+                            ->getResult();
+        } else {
             return $this->createQueryBuilder('v')
-                    ->where('v.'.$champ.'=:valeur')
-                    ->setParameter('valeur', $valeur)
-                    ->orderBy('v.datecreation', 'DESC')
-                    ->getQuery()
-                    ->getResult();
+                            ->where('v.' . $champ . '=:valeur')
+                            ->setParameter('valeur', $valeur)
+                            ->orderBy('v.datecreation', 'DESC')
+                            ->getQuery()
+                            ->getResult();
         }
     }
+
+    /**
+     * Retourne les n visites les plus récentes
+     * @param type $nb
+     * @return Visite[]
+     */
+    public function findAllLasted($nb): array {
+        return $this->createQueryBuilder('v') // alias de la table
+                        ->orderBy('v.datecreation', 'DESC')
+                        ->setMaxResults($nb)
+                        ->getQuery()
+                        ->getResult();
+    }
+
 }
